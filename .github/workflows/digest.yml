@@ -1,0 +1,68 @@
+name: Portfolio Digest
+
+on:
+  schedule:
+    # Two cron entries to lock 6:00 AM ET year-round:
+    - cron: '0 10 * * 1-5'   # 10:00 UTC = 6:00 AM EDT (Mar–Nov)
+    - cron: '0 11 * * 1-5'   # 11:00 UTC = 6:00 AM EST (Nov–Mar)
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Bypass market day check (for testing)'
+        type: boolean
+        default: false
+
+env:
+  TZ: America/New_York
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deduplicate DST triggers (one run per calendar day)
+        id: timecheck
+        run: |
+          TODAY=$(TZ=America/New_York date +%Y-%m-%d)
+          echo "today=$TODAY" >> $GITHUB_OUTPUT
+
+      - name: Check for existing run today
+        if: github.event_name == 'schedule'
+        id: dedup
+        uses: actions/cache@v4
+        with:
+          path: .digest-lock
+          key: digest-${{ steps.timecheck.outputs.today }}
+
+      - name: Write lock file
+        if: github.event_name != 'schedule' || steps.dedup.outputs.cache-hit != 'true'
+        run: echo "${{ steps.timecheck.outputs.today }}" > .digest-lock
+
+      - name: Skip if already ran today
+        id: should_run
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ] && [ "${{ steps.dedup.outputs.cache-hit }}" == "true" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Already ran today — skipping duplicate DST trigger"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.should_run.outputs.skip != 'true'
+
+      - uses: actions/setup-python@v5
+        if: steps.should_run.outputs.skip != 'true'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        if: steps.should_run.outputs.skip != 'true'
+        run: pip install -r requirements.txt
+
+      - name: Run digest
+        if: steps.should_run.outputs.skip != 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python main.py ${{ inputs.force == true && '--test' || '' }}

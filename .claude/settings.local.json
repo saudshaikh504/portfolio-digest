@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \":*)",
+      "Bash(python main.py --test)",
+      "Bash(schtasks /query /tn \"PortfolioDigest\" /fo LIST)",
+      "Bash(schtasks.exe /query /tn \"PortfolioDigest\" /fo LIST)",
+      "Bash(powershell.exe -Command \"& schtasks /query /tn ''PortfolioDigest'' /fo LIST 2>&1\")",
+      "Bash(powershell.exe -Command \"& {\\(Get-Command python\\).Source}\")",
+      "Bash(powershell.exe -Command \":*)",
+      "Bash(powershell -Command \"Register-ScheduledTask -TaskName ''PortfolioDigest'' -Description ''Run Portfolio Intelligence Digest on weekday mornings'' -Action \\(New-ScheduledTaskAction -Execute ''C:\\\\Users\\\\sshai\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python314\\\\python.exe'' -Argument ''main.py'' -WorkingDirectory ''C:\\\\Users\\\\sshai\\\\OneDrive\\\\Documents\\\\AI\\\\portfolio-digest''\\) -Trigger \\(New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At ''8:15AM''\\) -Settings \\(New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries\\)\")"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+digest.log
+
+# Windows scripts (local only)
+*.bat
+*.ps1
