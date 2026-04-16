@@ -1,4 +1,4 @@
-# Portfolio Digest
+# Portfolio Tracker
 
 A pre-market portfolio intelligence email delivered every weekday morning. Pulls live market data, commodity prices, sector performance, and per-holding news, then uses Gemini to write account-level commentary and a macro overview.
 
